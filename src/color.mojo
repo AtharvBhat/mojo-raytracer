@@ -3,7 +3,7 @@ from vec3 import Vec3
 alias Color3 = Vec3
 
 
-fn get_color(color: Color3) -> String:
+fn get_color_data(color: Color3) -> String:
     """
     Return the color data as a string.
     """

@@ -5,6 +5,27 @@ struct Vec3:
     var data: SIMD[DType.float64, 4]
 
     @always_inline
+    fn x(self) -> Float64:
+        """
+        Get value of "x" at index 0.
+        """
+        return self.data[0]
+
+    @always_inline
+    fn y(self) -> Float64:
+        """
+        Get value of "y" at index 1.
+        """
+        return self.data[1]
+
+    @always_inline
+    fn z(self) -> Float64:
+        """
+        Get value of "z" at index 2.
+        """
+        return self.data[2]
+
+    @always_inline
     fn __init__(
         inout self,
         x: Float64 = 0.0,
@@ -36,6 +57,13 @@ struct Vec3:
                  requirement of SIMD width to be powers of 2.
         """
         self.data = vec
+
+    @always_inline
+    fn __copyinit__(inout self, existing: Vec3) -> None:
+        """
+        Copy data from an existing Vec3 to self.
+        """
+        self.data = existing.data
 
     @always_inline
     fn __neg__(self) -> Vec3:
@@ -87,7 +115,7 @@ struct Vec3:
         return Vec3(self.data * other)
 
     @always_inline
-    fn __div__(self, other: Float64) -> Vec3:
+    fn __truediv__(self, other: Float64) -> Vec3:
         """
         Divide self by other.
         """
@@ -108,46 +136,53 @@ struct Vec3:
         return self.length_squared() ** 0.5
 
     @always_inline
-    fn __repr__(self) -> None:
+    fn __str__(self) -> String:
         """
-        Print vector values
+        Print vector values.
         """
-        print(
-            "Float64 [0]:",
-            self.data[0],
-            "Float64 [1]",
-            self.data[1],
-            "Float64 [2]",
-            self.data[2],
+        var str: String = (
+            " x [0]: "
+            + String(self.data[0])
+            + " y [1]: "
+            + String(self.data[1])
+            + " z [2]: "
+            + String(self.data[2])
         )
+        return str
 
     @always_inline
-    fn dot(self, other: Vec3) -> Float64:
-        """
-        Compute the dot product between a self and other.
-        """
-        return (self.data * other.data).reduce_add()
-
-    fn cross(self, other: Vec3) -> Vec3:
-        """
-        Compute the cross product between self and other.
-        """
-        return Vec3(
-            (self.data.shuffle[1, 2, 0, 3]() * other.data.shuffle[2, 0, 1, 3]())
-            - (
-                self.data.shuffle[2, 0, 1, 3]()
-                * other.data.shuffle[1, 2, 0, 3]()
-            )
-        )
-
     fn unit_vector(self) -> Vec3:
         """
         Return the unit vector of self.
         """
         return self.data / self.length()
 
+    @always_inline
     fn __getitem__(self, index: Int) -> Float64:
         """
         Get item at a specific index.
         """
         return self.data[index]
+
+
+@always_inline
+fn dot(vec1: Vec3, vec2: Vec3) -> Float64:
+    """
+    Compute the dot product between a self and other.
+    """
+    return (vec1.data * vec2.data).reduce_add()
+
+
+@always_inline
+fn cross(vec1: Vec3, vec2: Vec3) -> Vec3:
+    """
+    Compute the cross product between self and other.
+    """
+    return Vec3(
+        (vec1.data.shuffle[1, 2, 0, 3]() * vec2.data.shuffle[2, 0, 1, 3]())
+        - (vec1.data.shuffle[2, 0, 1, 3]() * vec2.data.shuffle[1, 2, 0, 3]())
+    )
+
+
+# alias for point
+alias Point3 = Vec3
