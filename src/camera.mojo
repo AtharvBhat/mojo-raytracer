@@ -4,6 +4,7 @@ from vec3 import Vec3, Point3
 from ray import Ray
 from color import Color3, get_color_data
 import math
+from random import random_float64
 
 
 struct Camera:
@@ -14,8 +15,16 @@ struct Camera:
     var pixel_00_loc: Point3
     var pixel_delta_u: Vec3
     var pixel_delta_v: Vec3
+    var samples_per_pixel: Int
+    var pixel_samples_scale: Float64
+    var pixel_width: Float64
+    var pixel_height: Float64
+    var pixel_half_width: Float64
+    var pixel_half_height: Float64
 
     fn __init__(inout self) -> None:
+        self.samples_per_pixel = 10
+        self.pixel_samples_scale = 1 / self.samples_per_pixel
         self.image_width = 2000
         self.aspect_ratio = 2.0
         self.image_height = math.max(
@@ -34,6 +43,12 @@ struct Camera:
 
         self.pixel_delta_u = viewport_u / self.image_width
         self.pixel_delta_v = viewport_v / self.image_height
+
+        self.pixel_width = self.pixel_delta_u.x()
+        self.pixel_height = self.pixel_delta_v.y()
+
+        self.pixel_half_width = self.pixel_width / 2
+        self.pixel_half_height = self.pixel_height / 2
 
         var viewport_upper_left: Vec3 = self.center - Vec3(
             0, 0, focal_length
@@ -62,11 +77,29 @@ struct Camera:
     fn render_pixel(
         self, pixel_x: Int, pixel_y: Int, world: HittableList
     ) -> Color3:
+        """
+        Given the coordinates of a pixel, get its color.
+
+        Args:
+            pixel_x: Index in a horizontal row of pixels.
+            pixel_y: Index into a vertical line of rows of pixels.
+            world: List of hittable things to raytrace against.
+        """
+        var pixel_color = Color3(0, 0, 0)
         var pixel_center: Point3 = self.pixel_00_loc + self.pixel_delta_u * pixel_x + self.pixel_delta_v * pixel_y
         var ray_direction: Vec3 = pixel_center - self.center
-        var ray: Ray = Ray(self.center, ray_direction)
-        return self.ray_color(ray, world)
+        for _ in range(self.samples_per_pixel):
+            var ray_jiggle = Vec3(
+                random_float64(-self.pixel_half_height, self.pixel_half_width),
+                random_float64(-self.pixel_half_height, self.pixel_half_height),
+                0,
+            )
+            var ray: Ray = Ray(self.center, ray_direction + ray_jiggle)
+            pixel_color = pixel_color + self.ray_color(ray, world)
 
+        return pixel_color * self.pixel_samples_scale
+
+    # TODO: Add an Image Class. Make the render store values in that image and instead add a write_to_file function that dumps output to a file
     fn render(self, world: HittableList) raises -> None:
         with open("image.ppm", "w") as image_file:
             # File Header

@@ -1,4 +1,5 @@
 import math
+from math.math import clamp
 
 
 @register_passable
@@ -163,6 +164,10 @@ struct Vec3:
         Get item at a specific index.
         """
         return self.data[index]
+
+    @always_inline
+    fn clamp(self, min_val: Float64, max_val: Float64) -> Vec3:
+        return clamp[DType.float64, 4](self.data, min_val, max_val)
 
 
 @always_inline
