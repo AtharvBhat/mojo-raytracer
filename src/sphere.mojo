@@ -1,6 +1,8 @@
 from hittable import Hittable, HitRecord
 from vec3 import Vec3, Point3
 from ray import Ray
+from interval import Interval
+import interval
 import vec3
 import math
 
@@ -16,8 +18,7 @@ struct Sphere(Hittable):
     fn hit(
         self,
         ray: Ray,
-        ray_tmin: Float64,
-        ray_tmax: Float64,
+        interval: Interval,
         inout hit_record: HitRecord,
     ) -> Bool:
         """
@@ -37,9 +38,9 @@ struct Sphere(Hittable):
 
         # find closest root
         var root: Float64 = (h - sqrtd) / a
-        if root <= ray_tmin or ray_tmax <= root:
+        if not interval.surrounds(root):
             root = (h + sqrtd) / a
-            if root <= ray_tmin or ray_tmax <= ray_tmax:
+            if not interval.surrounds(root):
                 return False
 
         hit_record.t = root

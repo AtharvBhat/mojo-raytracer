@@ -1,6 +1,8 @@
 from ray import Ray
 from vec3 import Vec3, Point3
 from collections import List
+from interval import Interval
+import interval
 import math
 
 
@@ -23,8 +25,7 @@ trait Hittable:
     fn hit(
         self,
         ray: Ray,
-        ray_tmin: Float64,
-        ray_tmax: Float64,
+        interval: Interval,
         inout hit_record: HitRecord,
     ) -> Bool:
         ...
@@ -48,8 +49,7 @@ struct HittableList[T: Hittable](Hittable):
     fn hit(
         self,
         ray: Ray,
-        ray_tmin: Float64,
-        ray_tmax: Float64,
+        interval: Interval,
         inout hit_record: HitRecord,
     ) -> Bool:
         """
@@ -60,11 +60,11 @@ struct HittableList[T: Hittable](Hittable):
             Point3(0, 0, 0), Vec3(0, 0, 0), 0.0, False
         )
         var hit_anything = False
-        var closest = ray_tmax
+        var closest = interval.max
 
         for i in range(len(self.hittable_list)):
             if self.hittable_list[i][].hit(
-                ray, ray_tmin, ray_tmax, temp_hit_record
+                ray, Interval(interval.min, closest), temp_hit_record
             ):
                 hit_anything = True
                 closest = temp_hit_record.t

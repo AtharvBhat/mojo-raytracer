@@ -1,6 +1,7 @@
 import math
 
 
+@register_passable
 struct Vec3:
     var data: SIMD[DType.float64, 4]
 
@@ -27,12 +28,11 @@ struct Vec3:
 
     @always_inline
     fn __init__(
-        inout self,
         x: Float64 = 0.0,
         y: Float64 = 0.0,
         z: Float64 = 0.0,
         w: Float64 = 0.0,
-    ) -> None:
+    ) -> Self:
         """
         Init a Vec3 struct.
         We use a SIMD width of 4 because in mojo it is required to be a power of 2.
@@ -44,10 +44,10 @@ struct Vec3:
             z: Some float that can represent either a positon or an RGB value.
             w: Some float that can represent either a position or an RGB value.
         """
-        self.data = SIMD[DType.float64, 4](x, y, z, w)
+        return Vec3 {data: SIMD[DType.float64, 4](x, y, z, w)}
 
     @always_inline
-    fn __init__(inout self, vec: SIMD[DType.float64, 4]) -> None:
+    fn __init__(vec: SIMD[DType.float64, 4]) -> Self:
         """
         Init a Vec3 struct.
 
@@ -56,14 +56,14 @@ struct Vec3:
                  Note that the argument "w" is unused and is simply there to satisfy Mojo's
                  requirement of SIMD width to be powers of 2.
         """
-        self.data = vec
+        return Vec3 {data: vec}
 
     @always_inline
-    fn __copyinit__(inout self, existing: Vec3) -> None:
+    fn __copyinit__(existing: Vec3) -> Self:
         """
         Copy data from an existing Vec3 to self.
         """
-        self.data = existing.data
+        return existing.data
 
     @always_inline
     fn __neg__(self) -> Vec3:
