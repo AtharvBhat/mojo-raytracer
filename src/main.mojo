@@ -1,29 +1,25 @@
 import math
+from math.limit import inf as math_inf
 import vec3
 from vec3 import Vec3, Point3
 from color import Color3, get_color_data
 from ray import Ray
+from hittable import Hittable, HitRecord, HittableList
+from sphere import Sphere
+
+alias inf = math_inf[DType.float64]()
 
 
-fn hit_sphere(center: Point3, radius: Float64, ray: Ray) -> Bool:
-    """
-    Given a sphere's center and radius and a ray,
-    returns whether the ray hits the sphere or not.
-    """
-    var oc: Vec3 = center - ray.origin
-    var a: Float64 = vec3.dot(ray.direction, ray.direction)
-    var b: Float64 = -2.0 * vec3.dot(ray.direction, oc)
-    var c: Float64 = vec3.dot(oc, oc) - radius**2
-    var discriminant: Float64 = b**2 - 4 * a * c
-    return discriminant >= 0
-
-
-fn get_color(ray: Ray) -> Color3:
+fn get_color(ray: Ray, world: HittableList) -> Color3:
     """
     Get the color of a ray in the scene.
     """
-    if hit_sphere(Point3(0, 0, -1), 0.5, ray):
-        return Color3(1, 0, 0)
+    var hit_record: HitRecord = HitRecord(
+        Vec3(0, 0, 0), Vec3(0, 0, 0), 0, False
+    )
+    if world.hit(ray, 0, inf, hit_record):
+        return (Color3(1, 1, 1) + hit_record.normal) / 2
+
     var unit_vector: Vec3 = ray.direction.unit_vector()
     # rescale "a" from -1,1 to 0,1
     var a: Float64 = (unit_vector.y() + 1) / 2
@@ -63,6 +59,11 @@ fn main() raises -> None:
         pixel_delta_u + pixel_delta_v
     ) / 2
 
+    # world
+    var world = List[UnsafePointer[Sphere]]()
+    world.append(Reference(Sphere(Point3(0, -100.5, -1), 100)))
+    world.append(Reference(Sphere(Point3(0, 0, -1), 0.5)))
+
     # Render
     with open("image.ppm", "w") as image_file:
         # File Header
@@ -84,7 +85,7 @@ fn main() raises -> None:
 
                 # shoot a ray from camera center into the direction of the pixel and get its color
                 var ray = Ray(camera_center, ray_direction)
-                var color = get_color(ray)
+                var color = get_color(ray, world)
                 file_data += get_color_data(color)
 
             image_file.write(file_data)
