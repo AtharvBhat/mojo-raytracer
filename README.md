@@ -6,4 +6,4 @@ Why :
     Because we can. 
     And i want to learn mojo and how raytracing works.
 
-This code follows Peter Shirley's excellent series of writeups on [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+This code follows Peter Shirley's excellent series of writeups on [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) but adds mojo specific optimizations ( Goal is to learn mojo afterall )
